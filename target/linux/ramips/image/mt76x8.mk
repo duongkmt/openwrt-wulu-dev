@@ -1095,3 +1095,20 @@ define Device/morse_ekh04v6
   SUPPORTED_DEVICES += morse,ekh04v6
 endef
 TARGET_DEVICES += morse_ekh04v6
+
+define Device/wulunetworks_wlnw1
+  IMAGE_SIZE := 65216k
+  DEVICE_VENDOR := WuLu Networks
+  DEVICE_MODEL := WLNW1
+  DEVICE_VARIANT :=
+  # Simplify by removing board and OpenWRT version.
+  IMAGE_PREFIX = $$(VERSION_DIST_SANITIZED)-$$(IMG_PREFIX_VERCODE)$$(IMG_PREFIX_EXTRA)$$(call sanitize,$$(DEVICE_TITLE))
+  DEVICE_IMG_NAME = $$(IMAGE_PREFIX)-$$(1)-$$(2)
+  DEVICE_PACKAGES := kmod-usb2 kmod-usb-ohci kmod-usb-ledtrig-usbport \
+	kmod-mmc-mt7620 kmod-i2c-mt7628 \
+	kmod-morse netifd-morse \
+	uboot-envtools
+  DEVICE_VARIANT := v1
+  SUPPORTED_DEVICES := wulunetworks,wlnw1
+endef
+TARGET_DEVICES += wulunetworks_wlnw1

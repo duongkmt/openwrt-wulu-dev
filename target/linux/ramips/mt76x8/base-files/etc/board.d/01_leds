@@ -61,6 +61,7 @@ mediatek,linkit-smart-7688)
 	;;
 morse,ekh03v3|\
 morse,ekh03v4|\
+wulunetworks,wlnw1|\
 morse,ekh04v6)
 	# There is a single RGB LED on this board. We want it to be green once booted,
 	# and turn purple once a link is established. To achieve this, we set
