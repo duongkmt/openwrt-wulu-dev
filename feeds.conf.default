@@ -2,5 +2,5 @@ src-git packages https://github.com/openwrt/packages.git^b5ed85f6e94aa08de143327
 src-git routing https://github.com/openwrt/routing.git^e351d1e623e9ef2ab78f28cb1ce8d271d28c902d
 src-git telephony https://github.com/openwrt/telephony.git^98c8a5aa4624312ed758e2e2b6d4039050a1649d
 src-git luci https://github.com/MorseMicro/luci.git^ac0693e6082985ea66562b576deaf10b56464897
-src-git morse https://github.com/ozrotorhead/morse-feed.git^f7e3b597c8c83dec11ee7e65cbeb7b1efd7b7b24
+src-git morse https://github.com/duongkmt/morse-feed-dev.git^c18c2d5f9c39dd3661e65ec8f1a8a129d19ae451
 src-git prpl https://github.com/MorseMicro/feed-prpl.git^d04ea65d7cf5b7612d97dfb0d496aa389f122996
