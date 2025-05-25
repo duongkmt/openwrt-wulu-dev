@@ -1,0 +1,4 @@
+echo '* * * * * /bin/sh /etc/auto_send_data.sh br-ahwlan > /tmp/autosend_script.log 2>&1' | crontab -
+service cron restart
+
+exit 0
