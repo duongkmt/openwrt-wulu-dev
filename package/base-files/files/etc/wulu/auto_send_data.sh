@@ -14,6 +14,13 @@
 #   2. Get default gateway ip when setting cloud and assigning 192.168.12.10 as local default gateway ip
 
 
+# Version: 0.5
+# New Updates:
+#   1. Only update cron when changed subnet
+#   2. start profile to get env variable
+
+[ -f /etc/profile ] && . /etc/profile
+
 #Get&Set cron service
 GATEWAYIP=
 GetSetConService (){
@@ -28,18 +35,18 @@ GetSetConService (){
         fi
 
     else
-        GATEWAYIP="192.168.12.10"
+        GATEWAYIP=$IOT_LOCAL_URL
         SetConService $GATEWAYIP
     fi
 }
 
 SetConService(){
-    grep "fping" /etc/crontabs/root
-    if [ $? != 0 ]; then
-        #255.255.255.0
-        SUBNET=$(echo $1 | cut -d '.' -f1-3)
-        (crontab -l 2>/dev/null; echo "* * * * * for ip in \$(seq 1 254);do fping -c 1 -t 100 $SUBNET.\$ip;done") | crontab -
+    OLD_SUBNET=$(grep fping /etc/crontabs/root | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+    NEW_SUBNET=$(echo $1 | cut -d '.' -f1-3)
+    if [ $OLD_SUBNET != $NEW_SUBNET ]; then
+        sed "s/$OLD_SUBNET/$NEW_SUBNET/" /etc/crontabs/root
         service cron restart
+        echo "update subnet from cron successfully"
     fi
 }
 # Read iw output to get MAC Addresses and RSSI

@@ -1,0 +1,2 @@
+* * * * * /bin/sh /etc/wulu/auto_send_data.sh br-ahwlan > /tmp/autosend_script.log 2>&1
+* * * * * for n in $(seq 1 254);do fping -c 1 -t 100 192.168.12.$n;done

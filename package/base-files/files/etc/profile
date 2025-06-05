@@ -15,7 +15,7 @@ export PS1='\u@\h:\w\$ '
 export ENV=/etc/shinit
 export IOT_CLOUD_URL="scity-dev.innovation.com.vn"
 export IOT_LOCAL_URL="192.168.12.10"
-export IOT_CLOUD_FLAG=1
+export IOT_CLOUD_FLAG=0
 
 case "$TERM" in
 	xterm*|rxvt*)
