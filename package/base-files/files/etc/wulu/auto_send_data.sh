@@ -19,6 +19,15 @@
 #   1. Only update cron when changed subnet
 #   2. start profile to get env variable
 
+#Halow AP interface
+hl_ap_interface="wlan1"
+
+#2.4 AP interface
+ap24_interface="phy1-ap0"
+
+#Mesh interface
+mesh_interface="wlan0"
+
 [ -f /etc/profile ] && . /etc/profile
 
 #Get&Set cron service
@@ -97,6 +106,58 @@ ReadIWOutput () {
     IFS_BAK=
 }
 
+meshdata=
+getMeshData()
+{
+    jsMesh="\"list of mesh\":"
+    adjacent_nodes="$(iwinfo $mesh_interface assoc|grep -i dbm)"
+    if [ -z "$adjacent_nodes" ]; then
+        meshdata="$jsMesh\"No connected\""
+    else
+        ID=$(iwinfo $mesh_interface info |grep -i essid |awk '{print $3}')
+        ID=$(echo $ID| sed 's/"//g')
+        jsMesh="$jsMesh[{\"MeshID\":\"$ID\"}"
+        while read -r node; do
+            #MAC
+            mac=$(echo "$node" | awk '{print $1}')
+            if [ -z "$mac" ]; then
+                mac=unknown
+            fi
+            js_mac="\"MAC\":\"$mac\""
+
+            #RSSI
+            rssi=$(echo "$node" | awk '{print $2}')
+            if [ -z "$rssi" ]; then
+                rssi=unknown
+            fi
+            js_rssi="\"RSSI\":\"$rssi\""
+
+            #NOISE
+            noise_signal=$(echo "$node" | awk '{print $5}')
+            if [ -z "$noise_signal" ]; then
+                noise_signal=unknown
+            fi
+            js_noise_signal="\"Noise Signal\":\"$noise_signal\""
+
+            #IPv4
+            ipv4=$(ip -4 neigh show | grep -i $mac | awk '{print $1}')
+            if [ -z "$ipv4" ]; then
+                ipv4=unknown
+            fi
+            js_ipv4="\"IPv4\":\"$ipv4\""
+
+            jsMesh="$jsMesh{$js_mac, $js_rssi, $js_noise_signal, $js_ipv4}"
+        done <<EOF
+            $adjacent_nodes
+EOF
+        jsMesh="$jsMesh]"
+        meshdata=$(echo $jsMesh | sed 's/}{/},{/g')
+
+    fi
+}
+echo meshdata start $meshdata
+getMeshData
+echo meshdata end $meshdata
 # check cron service
 
 GetSetConService
@@ -242,7 +303,7 @@ then
     JsonFromIW "list_camera"
 fi
 
-JSONDATA="${JSONDATA}\
+JSONDATA="${JSONDATA}, $meshdata\
 }"
 
 # Remove colons from MAC address to get token
