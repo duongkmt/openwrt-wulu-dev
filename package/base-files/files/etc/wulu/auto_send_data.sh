@@ -297,6 +297,8 @@ fi
 if [[ "$MAC_ADDR_DEV_ARR" != "" ]]
 then
     JsonFromIW "list_camera"
+else
+    JSONDATA="${JSONDATA},\"list_camera\":[]"
 fi
 
 JSONDATA="${JSONDATA}, $meshdata\
