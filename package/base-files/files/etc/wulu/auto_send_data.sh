@@ -19,6 +19,7 @@
 #   1. Only update cron when changed subnet
 #   2. start profile to get env variable
 
+echo $(date +'%Y-%m-%d %H:%M:%S') - Start collecting Mesh Node data
 #Halow AP interface
 hl_ap_interface="wlan1"
 
@@ -28,7 +29,7 @@ ap24_interface="phy1-ap0"
 #Mesh interface
 mesh_interface="wlan0"
 
-[ -f /etc/profile ] && . /etc/profile
+[ -f /etc/profile ] && . /etc/profile 2>&1
 
 #Get&Set cron service
 GATEWAYIP=
@@ -39,7 +40,7 @@ GetSetConService (){
             GATEWAYIP=$(route -n | awk 'NR > 2 && $2 != "0.0.0.0" {print $2}' | head -n 1)
             SetConService $GATEWAYIP
         else
-            echo "Not found default gateway ip"
+            echo $(date +'%Y-%m-%d %H:%M:%S') - Not found default gateway ip 
             exit 0
         fi
 
@@ -55,7 +56,7 @@ SetConService(){
     if [ $OLD_SUBNET != $NEW_SUBNET ]; then
         sed "s/$OLD_SUBNET/$NEW_SUBNET/" /etc/crontabs/root
         service cron restart
-        echo "update subnet from cron successfully"
+        echo $(date +'%Y-%m-%d %H:%M:%S') - update subnet from cron successfully
     fi
 }
 # Read iw output to get MAC Addresses and RSSI
@@ -155,9 +156,7 @@ EOF
 
     fi
 }
-echo meshdata start $meshdata
 getMeshData
-echo meshdata end $meshdata
 # check cron service
 
 GetSetConService
@@ -170,7 +169,7 @@ JsonFromIW () {
 
     INDEX=1
     NUM_MAC_ADDR_DEV=$(echo "$MAC_ADDR_DEV_ARR" | grep -o ' ' | wc -l)
-    echo "Number of connected device for $1: $NUM_MAC_ADDR_DEV"
+    echo $(date +'%Y-%m-%d %H:%M:%S') - "Number of connected device for $1: $NUM_MAC_ADDR_DEV"
     while [[ "$INDEX" -le "$NUM_MAC_ADDR_DEV" ]]
     do
         MAC=$(echo "$MAC_ADDR_DEV_ARR" | awk "{print \$$INDEX}")
@@ -203,7 +202,7 @@ UPTIME=$(uptime)
 # Node information
 IP_ADDR=$(ip -4 -br addr show $interface|grep UP)
 if [ $? -ne 0 ]; then
-    echo "Failed to get IP address"
+    echo $(date +'%Y-%m-%d %H:%M:%S') - "Failed to get IP address"
 else
     IP_ADDR=$(echo $IP_ADDR)| awk '{print $3}'
 fi
@@ -247,14 +246,12 @@ if [ -f $logfile ]; then
     EAST_WEST=$(grep east/west $logfile | awk -F'"east/west":"' '{print $2}' | awk -F'"' '{print $1}')
     LATITUDE_FLOAT=$(grep latitude $logfile | awk -F'"latitude":"' '{print $2}' | awk -F'"' '{print $1}')
     NORTH_SOUTH=$(grep north/south $logfile | awk -F'"north/south":"' '{print $2}' | awk -F'"' '{print $1}')
-    echo 0 $TIME_UTC $LONGITUDE_FLOAT $EAST_WEST $LATITUDE_FLOAT $NORTH_SOUTH
 else 
     TIME_UTC=000000.000
     LONGITUDE_FLOAT=10637.88524
     EAST_WEST=E
     LATITUDE_FLOAT=1051.34284
     NORTH_SOUTH=N
-    echo 1 $TIME_UTC $LONGITUDE_FLOAT $EAST_WEST $LATITUDE_FLOAT $NORTH_SOUTH
 fi
 
 TIME_UTC=${GNGGA_TIME_UTC:=$TIME_UTC}
@@ -262,7 +259,6 @@ LONGITUDE_FLOAT=${GNGGA_LONGITUDI:=$LONGITUDE_FLOAT}
 EAST_WEST=${GNGGA_EAST_WEST:=$EAST_WEST}
 LATITUDE_FLOAT=${GNGGA_LATITUDI:=$LATITUDE_FLOAT}
 NORTH_SOUTH=${GNGGA_NORTH_SOUTH:=$NORTH_SOUTH}
-echo 2 $TIME_UTC $LONGITUDE_FLOAT $EAST_WEST $LATITUDE_FLOAT $NORTH_SOUTH
 #set additional varibales here
 JSONDATA="{\
 \"device_id\":\"$DEVICE_ID\",\
@@ -310,10 +306,11 @@ JSONDATA="${JSONDATA}, $meshdata\
 TOKEN=${MAC_ADDR//:/}
 REAL_TOKEN=$(echo $TOKEN|tr 'a-z' 'A-Z')
 # Show values (for debug)
-echo "$JSONDATA"
-echo "$JSONDATA" > $logfile
-echo "IP: $IP_ADDR"
-echo "TOKEN: $REAL_TOKEN"
+echo $(date +'%Y-%m-%d %H:%M:%S') - Stop collecting Mesh Node data
+echo $(date +'%Y-%m-%d %H:%M:%S') - jsondata: "$JSONDATA"
+echo "$JSONDATA" > $logfile 2>&1
+# echo "IP: $IP_ADDR"
+# echo "TOKEN: $REAL_TOKEN"
 # Send data to cloud endpoint
 # Replace 'https://your-cloud-endpoint.com/api/deviceinfo' with your actual endpoint  
 # Send data to cloud endpoint
@@ -323,17 +320,18 @@ else
 CLOUD_URL="http://$IOT_LOCAL_URL:8080/device/telemetry/noauth/$REAL_TOKEN"
 fi
 
+echo $(date +'%Y-%m-%d %H:%M:%S') - Start sending Mesh Node data to IoT platform
 curl --insecure "$CLOUD_URL" \
   --header 'Content-Type: application/json' \
   --data "$JSONDATA"
-
 # Check if the curl command was successful
 if [ $? -eq 0 ]; then
-  echo "Data sent successfully."
+  echo $(date +'%Y-%m-%d %H:%M:%S') - Data sent successfully.
 else
-  echo "Failed to send data."
+  echo $(date +'%Y-%m-%d %H:%M:%S') - Failed to send data.
 fi
 
+echo 
 # crontab
 # * * * * * /bin/bash /path/to/curlsenddata.sh
 # 1 * * * * /bin/bash /path/to/curlsenddata.sh wlan0
